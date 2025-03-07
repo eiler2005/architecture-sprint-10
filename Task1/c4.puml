@@ -1,0 +1,61 @@
+@startuml
+!include https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Container.puml
+
+LAYOUT_TOP_DOWN()
+
+Person(Patient, "Пациент", "Записывается на приём, получает медицинские услуги, оплачивает визиты.")
+Person(Doctor, "Врач", "Ведёт приём пациентов, обновляет медицинские данные.")
+Person(Admin, "Администратор", "Регистрирует пациентов, управляет расписанием.")
+Person(Cashier, "Кассир", "Принимает оплату за услуги, фиксирует платежи.")
+Person(WarehouseKeeper, "Сотрудник склада", "Управляет запасами медицинских материалов и оборудования.")
+Person(Bookkeeper, "Бухгалтер", "Ведёт финансовый учёт компании.")
+
+System_Boundary(CompanyBoundary, "Медикаменте") {
+
+    ' --- Процесс: Регистрация и ведение пациентов ---
+    Container(RegistrationSystem, "Система регистрации пациентов", "Веб-сервис", "Управляет записями пациентов и историей приёмов.")
+    Container(Excel_Journals, "Журналы приёма", "Excel", "Содержит информацию о приёмах пациентов.")
+    Container(Excel_Patients, "Медицинские карты", "Excel", "Данные о пациентах и их лечении.")
+
+    ' --- Процесс: Проведение и учёт платежей ---
+    Container(PaymentSystem, "Система платежей", "Веб-сервис", "Фиксация оплат и управление финансовыми транзакциями.")
+    Container(KKM, "Контрольно-кассовая машина", "Фискальное оборудование", "Проводит платежи и фиксирует их.")
+    Container(Excel_Payments, "Учёт платежей", "Excel", "Запись финансовых операций.")
+    Container(OneC_Accounting, "1С Бухгалтерия", "1С", "Учёт зарплат, налогов и платежей.")
+
+    ' --- Процесс: Лабораторные анализы ---
+    Container(LaboratoryAPI, "API лаборатории", "Внешняя система", "Передача результатов анализов.")
+    Container(Excel_Analyses, "Учёт анализов", "Excel", "Хранит результаты лабораторных тестов.")
+
+    ' --- Процесс: Управление товарно-материальными ценностями ---
+    Container(InventorySystem, "Складской учёт", "1С", "Управляет запасами медикаментов и оборудования.")
+    Container(OneC_Inventory, "1С Торговля и склад", "1С", "Учёт ТМЦ и их движений.")
+
+    ' --- Процесс: Внутренние коммуникации и файловый обмен ---
+    Container(ExchangeMail, "Exchange Mail Server", "Почтовый сервер", "Обеспечивает корпоративную почтовую связь.")
+    Container(FileServer, "Файловый сервер", "Windows Server", "Хранение PDF и JPG документов.")
+}
+
+' --- Взаимодействия пользователей с системой ---
+Patient -> Admin : "Запись на приём"
+Admin -> RegistrationSystem : "Добавление записи"
+RegistrationSystem -> Excel_Journals : "Сохранение данных приёма"
+Doctor -> Excel_Patients : "Обновление истории болезни"
+
+Patient -> Cashier : "Оплата услуг"
+Cashier -> KKM : "Проведение платежа"
+KKM -> PaymentSystem : "Фиксация платежа"
+PaymentSystem -> Excel_Payments : "Запись платежа"
+PaymentSystem -> OneC_Accounting : "Передача данных о платеже"
+
+Doctor -> LaboratoryAPI : "Запрос лабораторного анализа"
+LaboratoryAPI -> Excel_Analyses : "Передача результатов анализов"
+Doctor -> Excel_Analyses : "Просмотр истории анализов"
+
+WarehouseKeeper -> InventorySystem : "Обновление информации о запасах"
+InventorySystem -> OneC_Inventory : "Сохранение движения ТМЦ"
+
+Bookkeeper -> OneC_Accounting : "Учёт налогов и зарплат"
+Bookkeeper -> FileServer : "Загрузка финансовых документов"
+
+@enduml
