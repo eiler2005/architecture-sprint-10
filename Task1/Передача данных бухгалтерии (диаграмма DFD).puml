@@ -1,0 +1,16 @@
+@startuml
+!include https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Container.puml
+
+title "Передача данных бухгалтерии (диаграмма DFD) as is"
+LAYOUT_TOP_DOWN()
+
+Person(Bookkeeper, "Бухгалтер", "Учёт финансов и налогов.")
+Container(OneC_Accounting, "1С Бухгалтерия предприятия", "1С", "Учёт зарплат, налогов и платежей.")
+Container(Excel_Payments, "Учёт платежей", "Excel", "Учёт финансовых операций.")
+Container(FileServer, "Файловый сервер", "Windows Server", "Хранение PDF и JPG документов.")
+
+Excel_Payments -> OneC_Accounting : "Передача данных о платежах"
+OneC_Accounting -> FileServer : "Экспорт документов"
+Bookkeeper -> OneC_Accounting : "Анализ данных"
+
+@enduml

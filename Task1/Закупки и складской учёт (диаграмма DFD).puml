@@ -1,0 +1,15 @@
+@startuml
+!include https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Container.puml
+
+title "Закупки и складской учёт DFD as is"
+LAYOUT_TOP_DOWN()
+
+Person(WarehouseKeeper, "Сотрудник склада", "Управляет запасами оборудования и медикаментов.")
+Container(Supplier, "Поставщик", "Внешняя система", "Поставки медикаментов и оборудования.")
+Container(OneC_Inventory, "1С Торговля и склад", "1С", "Учёт товарно-материальных ценностей.")
+
+WarehouseKeeper -> Supplier : "Заказ поставки"
+Supplier -> OneC_Inventory : "Передача информации о поставке"
+WarehouseKeeper -> OneC_Inventory : "Учёт поступления"
+
+@enduml

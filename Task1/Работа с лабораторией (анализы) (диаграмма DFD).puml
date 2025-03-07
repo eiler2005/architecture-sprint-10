@@ -1,0 +1,17 @@
+@startuml
+!include https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Container.puml
+
+title "Работа с лабораторией (анализы) (диаграмма DFD) as is"
+LAYOUT_TOP_DOWN()
+
+Person(Patient, "Пациент", "Сдаёт анализы.")
+Person(Doctor, "Врач", "Назначает анализы, получает результаты.")
+Container(LaboratoryAPI, "API лаборатории", "Внешняя система", "Передача результатов анализов.")
+Container(Excel_Analyses, "Учёт анализов", "Excel", "Сохранение результатов анализов.")
+
+Patient -> Doctor : "Прохождение анализов"
+Doctor -> LaboratoryAPI : "Запрос анализа"
+LaboratoryAPI -> Excel_Analyses : "Передача результатов"
+Doctor -> Excel_Analyses : "Запись в историю пациента"
+
+@enduml

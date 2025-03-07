@@ -1,0 +1,78 @@
+@startuml ToBe_Container_Diagram
+
+!include https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Container.puml
+
+' Заголовок и макет
+title "To-Be Architecture (MVP) - Container Diagram"
+LAYOUT_WITH_LEGEND()
+
+' ----------------------------------------------------------------------------------
+' Определяем участников (персоны) C4
+' ----------------------------------------------------------------------------------
+Person_Ext(patient, "Пациент", "Записывается на приём, оплачивает услуги, просматривает результаты анализов.")
+Person(staff, "Сотрудник ресепшена / Мед. персонал", "Управляет записями, видит ограниченные данные о пациентах.")
+Person(cashier, "Кассир", "Принимает оплату, фиксирует транзакции.")
+Person(bookkeeper, "Бухгалтер", "Ведёт финансовый учёт компании.")
+
+' ----------------------------------------------------------------------------------
+' Граница системы 'Медикаменте' (System Boundary)
+' ----------------------------------------------------------------------------------
+System_Boundary(ClinicSystem, "Система 'Медикаменте'") {
+
+    Container(WebPortal, "Портал (Web/Mobile)", "React / Flutter", "Позволяет пациентам записываться на приём, просматривать личные данные.")
+    Container(SchedulingService, "Сервис расписаний", "Spring Boot", "Управляет расписаниями, хранит записи на приём, отправляет уведомления.")
+    Container(PatientDataService, "Сервис данных пациентов", "Spring Boot", "Обработка основных данных пациентов, включая их мед. карты.")
+    Container(PaymentService, "Сервис платежей", "Spring Boot", "Обработка платежей, связь с ККМ и 1C.")
+
+    ContainerDb(MainDB, "Главная база данных", "PostgreSQL + TDE", "Хранит зашифрованные персональные и медицинские данные.")
+    ContainerDb(FinanceDB, "Финансовая БД", "PostgreSQL + AES-256", "Шифрованное хранение платежных операций.")
+
+    Container(OneCAccounting, "1С Бухгалтерия", "1С", "Учёт платежей, зарплат, кадровые данные (синхронизация с финансами).")
+
+    Container(LabIntegration, "Интеграция с лабораторией", "API Gateway", "Безопасная передача результатов анализов (HTTPS/MTLS).")
+    Container(ExchangeMail, "Почтовый сервер", "Exchange + TLS", "Шифрованная передача корпоративной почты.")
+    Container(FileServer, "Файловый сервер", "S3-совместимое хранилище", "Шифрованное хранилище PDF и JPG документов.")
+
+    Container(DLPSystem, "Система предотвращения утечек (DLP)", "DLP (Varonis, Microsoft Purview)", "Контроль утечек через email и USB.")
+    Container(SIEM, "Система мониторинга событий безопасности", "ELK Stack", "Логирование всех действий, анализ подозрительных активностей.")
+}
+
+' ----------------------------------------------------------------------------------
+' Внешние системы (Интеграция)
+' ----------------------------------------------------------------------------------
+System_Ext(ExternalLab, "Лаборатория (Партнёр)", "Получает запросы на анализы, выдаёт результаты.")
+System_Ext(BankAPI, "Банковская система", "Проверяет и фиксирует транзакции клиентов.")
+
+' ----------------------------------------------------------------------------------
+' Связи (Relationships)
+' ----------------------------------------------------------------------------------
+Rel(patient, WebPortal, "HTTPS + JWT", "Запись на приём, просмотр данных.")
+Rel(WebPortal, SchedulingService, "API (HTTPS)", "Управление записями, расписанием.")
+Rel(WebPortal, PatientDataService, "API (HTTPS)", "Просмотр личных и медицинских данных.")
+Rel(WebPortal, PaymentService, "API (HTTPS)", "Оплата услуг.")
+
+Rel(SchedulingService, MainDB, "Читает/пишет данные расписания.", "Encrypted at Rest.")
+Rel(PatientDataService, MainDB, "Читает/пишет персональные и медицинские данные.", "Encrypted at Rest.")
+Rel(PaymentService, FinanceDB, "Читает/пишет данные об оплатах.", "Encrypted at Rest.")
+
+Rel(PaymentService, OneCAccounting, "Синхронизация платежей.", "HTTPS / OLE / SOAP (в зависимости от 1С).")
+Rel(PaymentService, BankAPI, "REST API", "Проверка платежей и транзакций.")
+
+Rel(PatientDataService, LabIntegration, "HTTPS + OAuth2", "Получает/отправляет результаты анализов.")
+Rel(LabIntegration, ExternalLab, "HTTPS (MTLS/OAuth2)", "Запрашивает или принимает результаты.")
+
+Rel(cashier, PaymentService, "Фиксирует платежи", "HTTPS (RBAC).")
+Rel(bookkeeper, FinanceDB, "Управляет финансовыми операциями", "HTTPS (RBAC).")
+
+Rel(staff, SchedulingService, "Работает через UI (Resepshen Portal), \nили прямой интерфейс", "HTTPS (AD / RBAC).")
+Rel(staff, PatientDataService, "Ограниченный доступ к данным", "HTTPS (RBAC/ABAC).")
+
+Rel(ExchangeMail, DLPSystem, "Мониторинг email", "TLS + DLP.")
+Rel(SIEM, ClinicSystem, "Анализ активности", "Логирование всех действий.")
+
+' ----------------------------------------------------------------------------------
+' Дополнительный блок для легенды
+' ----------------------------------------------------------------------------------
+SHOW_LEGEND()
+
+@enduml

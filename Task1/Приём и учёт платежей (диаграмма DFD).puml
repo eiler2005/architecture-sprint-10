@@ -1,0 +1,18 @@
+@startuml
+!include https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Container.puml
+
+title "Приём и учёт платежей (диаграмма DFD as is )
+LAYOUT_TOP_DOWN()
+
+Person(Patient, "Пациент", "Оплачивает услуги.")
+Person(Cashier, "Кассир", "Принимает платежи и фиксирует их.")
+Container(KKM, "Контрольно-кассовая машина", "Фискальное оборудование", "Фиксация платежей.")
+Container(Excel_Payments, "Учёт платежей", "Excel", "Запись финансовых операций.")
+Container(OneC_Accounting, "1С Бухгалтерия", "1С", "Учёт зарплат, налогов и платежей.")
+
+Patient -> Cashier : "Оплата услуг"
+Cashier -> KKM : "Фиксация платежа"
+KKM -> Excel_Payments : "Запись платежа"
+Excel_Payments -> OneC_Accounting : "Передача данных о платеже"
+
+@enduml

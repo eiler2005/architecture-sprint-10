@@ -1,0 +1,18 @@
+@startuml
+!include https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Container.puml
+
+title "Регистрация и учёт пациентов (диаграмма DFD) as is"
+LAYOUT_TOP_DOWN()
+
+Person(Patient, "Пациент", "Записывается на приём.")
+Person(Admin, "Администратор", "Регистрирует пациентов.")
+Person(Doctor, "Врач", "Просматривает историю пациентов.")
+Container(Excel_Journals, "Журналы приёма", "Excel", "Запись приёма пациентов.")
+Container(Excel_Patients, "Медицинские карты", "Excel", "Учёт пациентов и историй болезней.")
+
+Patient -> Admin : "Запись на приём"
+Admin -> Excel_Journals : "Регистрация записи"
+Doctor -> Excel_Journals : "Просмотр записи"
+Doctor -> Excel_Patients : "Обновление истории болезни"
+
+@enduml
